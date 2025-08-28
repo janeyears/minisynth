@@ -1,37 +1,41 @@
 NAME := minisynth
 
-PARSING		:= 
-MAIN		:= main errors
-SOUNDS		:= 
+PARSING		:= pars
+MAIN		:= main
+#SOUNDS		:= sounds
+OBJS_PATH	:= ./obj
+DEP_PATH	:= ./dep
 
-SRCS	:= $(addsuffix .c, $(addprefix mandatory/src/, $(MAIN))) \
-			$(addsuffix .c, $(addprefix mandatory/src/parsing/, $(PARSING))) \
-			$(addsuffix .c, $(addprefix mandatory/src/game/, $(SOUNDS)))
+SRCS	:= $(addsuffix .c, $(addprefix src/, $(MAIN))) \
+			$(addsuffix .c, $(addprefix src/parsing/, $(PARSING)))
+#			$(addsuffix .c, $(addprefix src/sounds/, $(SOUNDS)))
 
-OBJS := $(SRCS:mandatory/src/%=$(OBJS_PATH)/%)
-OBJS := $(OBJS:.c=.o)
+OBJ := $(SRCS:src/%=$(OBJS_PATH)/%)
+OBJ := $(OBJ:.c=.o)
 
+DEP := $(SRCS:src/%=$(DEP_PATH)/%)
+DEP := $(DEP:.c=.d)
 
-
-OBJ := $(SRC:.cpp=.o)
-DEP := $(SRC:.cpp=.d)
-
-CC := c++
+CC := cc
 CFLAGS := -Wall -Wextra -Werror
-HEADERS := -I.
+HEADERS := -I ./inc
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
 
-%.o: %.cpp
-	$(CC) $(CFLAGS) $(HEADERS) -MMD -MP -c $< -o $@
+$(DEP_PATH)/%.d:
+	@mkdir -p $(dir $@)
+
+$(OBJS_PATH)/%.o: src/%.c
+	@mkdir -p $(dir $@)
+	@$(CC) $(CFLAGS) $(HEADERS) -c $< -o $@
 
 -include $(DEP)
 
 clean:
-	rm -f $(OBJ) $(DEP)
+	@rm -rf $(OBJS_PATH) $(OBJ) $(DEP)
 
 fclean: clean
 	rm -f $(NAME)
