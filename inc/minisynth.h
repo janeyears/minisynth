@@ -18,7 +18,7 @@ typedef struct
 	char pitch;
 	char alteration;
 	char octave;
-	char duration;
+	double duration;
 }	note;
 
 typedef struct
