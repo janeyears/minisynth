@@ -1,14 +1,71 @@
 #include "minisynth.h"
 
-int paCallback(const void *inputBuffer, void *outputBuffer,
+static void	envelope(double *sample, t_scheduled_track *track,
+				double callback_time, t_scheduled_note *note)
+{
+	double time;
+	double note_duration;
+	double env_amp;
+
+	time = callback_time - note->start_s;
+	note_duration = note->end_s - note->start_s;
+	env_amp = 1.0;
+
+	if (time < track->attack)
+		env_amp = time / track->attack;													// Attack
+	else if (time < track->attack + track->decay)
+		env_amp = 1.0 - (1.0 - track->sustain) * (time - track->attack) / track->decay;	// Decay
+	else if (time < note_duration)
+		env_amp = track->sustain;														// Sustain
+	else
+	{
+		double release_time = time - note_duration;
+		if (release_time < track->release)
+			env_amp = track->sustain * (1.0 - release_time / track->release);			// Release
+		else
+			env_amp = 0.0;
+	}
+
+	// Add to output, scaled by volume and envelope
+	*sample *= env_amp * track->volume;
+}
+
+static void	instrument(double *sample, t_scheduled_track *track,
+				double callback_time, t_scheduled_note *note)
+{
+	double phase = TWO_PI * note->freq_hz * (callback_time - note->start_s);
+	switch (track->instrument)
+	{
+		case SINE:
+			*sample += sin(phase);
+			break;
+		case SQUARE:
+			*sample += (sin(phase) >= 0 ? 1.0 : -1.0);
+			break;
+		case SAW:
+			*sample += 2.0*(phase/(TWO_PI) - floor(phase/(TWO_PI) + 0.5));
+			break;
+		case TRIANGLE:
+			*sample += asin(sin(phase))*PI_TWO;
+			break;
+		 case KICK:										// low frequency sine, ignore note->freq_hz
+			*sample += sin(TWO_PI * 60.0 * (callback_time - note->start_s));
+			break;
+		case SNARE:										// white noise, ignore note->freq_hz
+			*sample += ((double)rand() / RAND_MAX) * 2.0 - 1.0;
+			break;
+	}
+}
+
+int	paCallback(const void *inputBuffer, void *outputBuffer,
 					unsigned long framesPerBuffer,
 					const PaStreamCallbackTimeInfo* timeInfo,
 					PaStreamCallbackFlags statusFlags,
 					void *userData)
 {
-	int16_t *out;
-	t_schedule *sched;
-	double callback_time; 
+	int16_t		*out;
+	t_schedule 	*sched;
+	double	callback_time; 
 
 	(void) inputBuffer;										//microphone
 		// Pointer to PaStreamCallbackTimeInfo struct:
@@ -39,25 +96,12 @@ int paCallback(const void *inputBuffer, void *outputBuffer,
 				t_scheduled_note *note = &track->notes[n];
 				if (callback_time >= note->start_s && callback_time < note->end_s)
 				{
-					if (!note->is_rest) {
-						double phase = TWO_PI * note->freq_hz * (callback_time - note->start_s);
-						switch (track->instrument)
-						{
-							case SINE:
-								sample += sin(phase);
-								break;
-							case SQUARE:
-								sample += (sin(phase) >= 0 ? 1.0 : -1.0);
-								break;
-							case SAW:
-								sample += 2.0*(phase/(TWO_PI) - floor(phase/(TWO_PI) + 0.5));
-								break;
-							case TRIANGLE:
-								sample += asin(sin(phase))*PI_TWO;
-								break;
-						}
+					if (!note->is_rest)
+					{
+						instrument(&sample, track, callback_time, note);
+						envelope(&sample, track, callback_time, note);
 					}
-					break;							// only one note active at a time per track
+					break;			// only one note active at a time per track
 				}
 			}
 		}
