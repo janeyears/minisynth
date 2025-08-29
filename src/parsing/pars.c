@@ -14,7 +14,7 @@ char *trim(char *str)
 	return str;
 }
 
-inst parse_instrument(const char *name) {
+t_inst parse_instrument(const char *name) {
 	if (strcmp(name, "sine") == 0) 
 		return SINE;
 	if (strcmp(name, "saw") == 0) 

@@ -1,6 +1,6 @@
 #include "minisynth.h"
 
-static int paCallback(const void *inputBuffer, void *outputBuffer,
+int paCallback(const void *inputBuffer, void *outputBuffer,
 					unsigned long framesPerBuffer,
 					const PaStreamCallbackTimeInfo* timeInfo,
 					PaStreamCallbackFlags statusFlags,
@@ -10,7 +10,20 @@ static int paCallback(const void *inputBuffer, void *outputBuffer,
 	t_schedule *sched;
 	double callback_time; 
 
-	(void) inputBuffer;						//microphone
+	(void) inputBuffer;										//microphone
+		// Pointer to PaStreamCallbackTimeInfo struct:
+		//   - inputBufferAdcTime: timestamp of the first sample of the input buffer (ignored here)
+		//   - currentTime: estimated current stream time in seconds (ignored here)
+		//   - outputBufferDacTime: timestamp of the first sample of the output buffer (ignored here)
+	(void) timeInfo;
+		// Bitmask indicating stream flags:
+		//   - paInputUnderflow   : input buffer underflow occurred
+		//   - paInputOverflow    : input buffer overflow occurred
+		//   - paOutputUnderflow  : output buffer underflow occurred
+		//   - paOutputOverflow   : output buffer overflow occurred
+		//   - paPrimingOutput    : first callback after stream start
+	(void) statusFlags;
+
 	callback_time = 0.0;
 	sched = (t_schedule*)userData;
 	out = (int16_t*)outputBuffer;
@@ -28,7 +41,8 @@ static int paCallback(const void *inputBuffer, void *outputBuffer,
 				{
 					if (!note->is_rest) {
 						double phase = TWO_PI * note->freq_hz * (callback_time - note->start_s);
-						switch (track->instrument) {
+						switch (track->instrument)
+						{
 							case SINE:
 								sample += sin(phase);
 								break;
@@ -43,7 +57,7 @@ static int paCallback(const void *inputBuffer, void *outputBuffer,
 								break;
 						}
 					}
-					break;		// only one note active at a time per track
+					break;							// only one note active at a time per track
 				}
 			}
 		}
