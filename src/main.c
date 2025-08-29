@@ -11,7 +11,7 @@ int main (int ac, char **av)
 	if (ac == 2)
 		parsing(av[1], &song);						// Parse file
 	else
-		return (perror("Usage: ./minisynth file\n"), 1);
+		return (perror("Usage: ./minisynth_file volume*\n"), 1);
 
 	t_schedule schedule;							// Fill schedule for tracks by notes
 	get_schedule(&schedule, &song);

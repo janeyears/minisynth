@@ -72,10 +72,18 @@ int get_schedule(t_schedule *schedule, t_song *song)
 		{
 			// perror("malloc failed");  ERROR MSG
 			//free schedule->tracks[i].notes for all done i
-			//free schedule->tracks 
+			//free schedule->tracks
 			return (-1);
 		}
 		schedule->tracks[i].instrument = song->tracks[i].instrument;
+
+//NEED ADD TO PARSING
+		schedule->tracks[i].volume = 0.5;//song->tracks[i].volume / 100.0;
+		schedule->tracks[i].attack = 0.01;//song->tracks[i].attack;
+		schedule->tracks[i].decay = 0.1;//song->tracks[i].decay;
+		schedule->tracks[i].sustain = 0.8;//song->tracks[i].sustain;
+		schedule->tracks[i].release = 0.3;//song->tracks[i].release;
+
 		time = 0.0;
 		for (int j = 0; j < song->tracks[i].note_count; j++) {
 			schedule->tracks[i].notes[j].is_rest = 0;

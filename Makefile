@@ -43,7 +43,7 @@ $(OBJS_PATH)/%.o: src/%.c
 	@$(CC) $(CFLAGS) $(HEADERS) -c $< -o $@
 
 $(PORTAUDIO_LIB):
-	@cd $(PORTAUDIO_DIR) && ./configure && make
+	@cd $(PORTAUDIO_DIR) && ./configure && make  > /dev/null 2>&1
 	@echo "PortAudio library builded"
 
 -include $(DEP)

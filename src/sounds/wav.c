@@ -56,6 +56,7 @@ void write_schedule_to_wav(const char *filename, t_schedule *schedule)
 						case SAW: sample += 2.0 * (t * note->freq_hz - floor(t * note->freq_hz + 0.5)); break;
 						case TRIANGLE: sample += asin(sin(phase)) * PI_TWO; break;
 					}
+					sample *= track->volume;
 				}
 			}
 		}

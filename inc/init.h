@@ -22,12 +22,22 @@
 
 #define MAX_LINE 4096
 
+#define RESET   "\033[0m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN    "\033[36m"
+
 typedef enum e_inst
 {
 	SINE,
 	SAW,
 	SQUARE,
-	TRIANGLE
+	TRIANGLE,
+	KICK,
+	SNARE
 } t_inst;
 
 // Parsing
@@ -51,6 +61,12 @@ typedef struct s_track
 	t_note				*notes;
 	int					note_count;
 	int					note_capacity;
+	// BONUS, now it is hardcoded to values in get_schedule()
+	// double				volume;		// 0.0 = silent, 1.0 = full volume
+	// double				attack;		// seconds
+	// double				decay;		// seconds
+	// double				sustain;	// 0.0–1.0
+	// double				release;	// seconds
 }	t_track;
 
 typedef struct s_song
@@ -75,6 +91,11 @@ typedef struct s_scheduled_track
 	t_inst				instrument;
 	t_scheduled_note	*notes;
 	int					note_count;
+	double				volume;		// 0.0 = silent, 1.0 = full volume
+	double				attack;		// seconds
+	double				decay;		// seconds
+	double				sustain;	// 0.0–1.0
+	double				release;	// seconds
 } t_scheduled_track;
 
 typedef struct s_schedule
