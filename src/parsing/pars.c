@@ -40,10 +40,9 @@ t_note parse_note_token(const char *token, int *prev_octave, double *prev_durati
 		n.alteration = token[i]; 
 		i++; 
 	}
-	if (isdigit((unsigned char)token[i]))
-	{ 
-		n.octave = token[i] - '0'; 
-		*prev_octave = n.octave; 
+	if (isdigit((unsigned char)token[i])) { 
+		n.octave = token[i] - '0';   // convert char '4' → int 4
+		*prev_octave = n.octave;     // store for next note
 		i++; 
 	}
 	if (token[i] == '/')

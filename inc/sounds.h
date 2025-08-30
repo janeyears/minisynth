@@ -9,6 +9,5 @@ int		paCallback(const void *inputBuffer, void *outputBuffer,
 					const PaStreamCallbackTimeInfo* timeInfo,
 					PaStreamCallbackFlags statusFlags,
 					void *userData);
-void	write_schedule_to_wav(const char *filename, t_schedule *schedule);
 
 #endif

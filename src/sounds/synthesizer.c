@@ -65,7 +65,6 @@ int	paCallback(const void *inputBuffer, void *outputBuffer,
 {
 	int16_t		*out;
 	t_schedule 	*sched;
-	double	callback_time; 
 
 	(void) inputBuffer;										//microphone
 		// Pointer to PaStreamCallbackTimeInfo struct:
@@ -81,9 +80,9 @@ int	paCallback(const void *inputBuffer, void *outputBuffer,
 		//   - paPrimingOutput    : first callback after stream start
 	(void) statusFlags;
 
-	callback_time = 0.0;
 	sched = (t_schedule*)userData;
 	out = (int16_t*)outputBuffer;
+	double callback_time = sched->current_time;
 
 	for (unsigned long i = 0; i < framesPerBuffer; i++)		// Loop over buffer
 	{
@@ -99,6 +98,8 @@ int	paCallback(const void *inputBuffer, void *outputBuffer,
 					if (!note->is_rest)
 					{
 						instrument(&sample, track, callback_time, note);
+						// if (i < 10 && t_idx == 0)
+    					// 	printf("freq=%f sample=%f\n", note->freq_hz, sample);
 						envelope(&sample, track, callback_time, note);
 					}
 					break;			// only one note active at a time per track
@@ -115,5 +116,6 @@ int	paCallback(const void *inputBuffer, void *outputBuffer,
 		*out++ = out_sample; // right
 		callback_time += 1.0 / SAMPLE_RATE;
 	}
+	sched->current_time = callback_time;
 	return paContinue; // keep playing
 }

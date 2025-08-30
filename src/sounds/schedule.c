@@ -20,7 +20,7 @@ double note_to_freq(t_note n)
 	int	semitone;
 	int	octave;
 	int	midi;
-	int	freq;
+	double	freq;
 
 	if(n.pitch == 'r')
 		return 0.0; // пауза
@@ -29,9 +29,10 @@ double note_to_freq(t_note n)
 		semitone += 1;
 	if(n.alteration == 'b')
 		semitone -= 1;
-	octave = n.octave - '0';
-	midi = (octave + 1)*12 + semitone;
+	octave = n.octave;  // already an int now
+	midi = (octave + 1) * 12 + semitone;
 	freq = 440.0 * pow(2.0, (midi - 69) / 12.0);
+	printf("%f, %d, %d, %d, %c, %c, %c\n", freq, octave, semitone, midi, n.alteration, n.pitch, n.octave);
 	return (freq);
 }
 
@@ -56,6 +57,7 @@ int get_schedule(t_schedule *schedule, t_song *song)
 	double seconds_per_beat;
 	double time;
 
+	schedule->current_time = 0.0;
 	seconds_per_beat = 60.0 / song->tempo;
 	schedule->track_count = song->track_count; // from parsed data
 	schedule->tracks = malloc(schedule->track_count * sizeof(t_scheduled_track));
@@ -78,7 +80,7 @@ int get_schedule(t_schedule *schedule, t_song *song)
 		schedule->tracks[i].instrument = song->tracks[i].instrument;
 
 //NEED ADD TO PARSING
-		schedule->tracks[i].volume = 0.5;//song->tracks[i].volume / 100.0;
+		schedule->tracks[i].volume = 1.0;//song->tracks[i].volume / 100.0;
 		schedule->tracks[i].attack = 0.01;//song->tracks[i].attack;
 		schedule->tracks[i].decay = 0.1;//song->tracks[i].decay;
 		schedule->tracks[i].sustain = 0.8;//song->tracks[i].sustain;
@@ -91,8 +93,7 @@ int get_schedule(t_schedule *schedule, t_song *song)
 			if (schedule->tracks[i].notes[j].freq_hz == 0.0)
 				schedule->tracks[i].notes[j].is_rest = 1;
 			schedule->tracks[i].notes[j].start_s = time;
-			schedule->tracks[i].notes[j].end_s = schedule->tracks[i].notes[j].end_s
-					+ song->tracks[i].notes[j].duration * seconds_per_beat;
+			schedule->tracks[i].notes[j].end_s = time + song->tracks[i].notes[j].duration * seconds_per_beat;
 			time = schedule->tracks[i].notes[j].end_s;
 		}
 	}

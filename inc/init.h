@@ -51,7 +51,7 @@ typedef struct s_note
 {
 	char				pitch;
 	char				alteration;
-	char				octave;
+	int				octave;
 	double				duration;
 }	t_note;
 
@@ -103,6 +103,7 @@ typedef struct s_schedule
 	int					track_count;
 	t_scheduled_track	*tracks;
 	double				song_duration;
+	double				current_time;
 } t_schedule;
 
 #endif

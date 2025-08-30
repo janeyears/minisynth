@@ -15,8 +15,6 @@ int main (int ac, char **av)
 
 	t_schedule schedule;							// Fill schedule for tracks by notes
 	get_schedule(&schedule, &song);
-	write_schedule_to_wav("output.wav", &schedule);	// Write music to .wav, because I want
-
 	PaStream *stream;
 	PaError err;
 	err = Pa_Initialize();							// Initialization of PortAudio
@@ -46,5 +44,5 @@ int main (int ac, char **av)
 	Pa_StopStream(stream);							// Stop and close stream
 	Pa_CloseStream(stream);
 	Pa_Terminate();									//Terminate when done
-	printf("Hope you enjoed!\n");
+	printf("Hope you enjoyed!\n");
 }

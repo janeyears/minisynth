@@ -1,5 +1,5 @@
 tempo 160
-tracks triangle,sinez,kick,snare
+tracks triangle,sine,kick,snare
 
 volumes 100,50,80,60
 track 1 adsr 0.01 0.1 0.8 0.3
