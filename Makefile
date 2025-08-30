@@ -7,7 +7,6 @@ SOUNDS		:= synthesizer schedule
 
 # Paths
 OBJS_PATH	:= ./obj
-DEP_PATH	:= ./dep
 PORTAUDIO_DIR := ./libs/portaudio
 PORTAUDIO_LIB := $(PORTAUDIO_DIR)/lib/.libs/libportaudio.a
 
@@ -33,9 +32,6 @@ $(NAME): $(PORTAUDIO_LIB) $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(PORTAUDIO_LIB) \
 		-framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework CoreServices -framework CoreFoundation \
 		-o $(NAME)
-
-$(DEP_PATH)/%.d:
-	@mkdir -p $(dir $@)
 
 $(OBJS_PATH)/%.o: src/%.c
 	@mkdir -p $(dir $@)
