@@ -63,26 +63,20 @@ int	paCallback(const void *inputBuffer, void *outputBuffer,
 					PaStreamCallbackFlags statusFlags,
 					void *userData)
 {
-	int16_t		*out;
-	t_schedule 	*sched;
+	int16_t            *out;
+	t_schedule        *sched;
+	double            callback_time;
+	static double    bar_accum[BARS];   // sum of samples per bar
+	static int        bar_count[BARS];
+	int                levels[BARS];
 
-	(void) inputBuffer;										//microphone
-		// Pointer to PaStreamCallbackTimeInfo struct:
-		//   - inputBufferAdcTime: timestamp of the first sample of the input buffer (ignored here)
-		//   - currentTime: estimated current stream time in seconds (ignored here)
-		//   - outputBufferDacTime: timestamp of the first sample of the output buffer (ignored here)
+	(void) inputBuffer;                                        //microphone
 	(void) timeInfo;
-		// Bitmask indicating stream flags:
-		//   - paInputUnderflow   : input buffer underflow occurred
-		//   - paInputOverflow    : input buffer overflow occurred
-		//   - paOutputUnderflow  : output buffer underflow occurred
-		//   - paOutputOverflow   : output buffer overflow occurred
-		//   - paPrimingOutput    : first callback after stream start
 	(void) statusFlags;
 
 	sched = (t_schedule*)userData;
 	out = (int16_t*)outputBuffer;
-	double callback_time = sched->current_time;
+	callback_time = sched->current_time;
 
 	for (unsigned long i = 0; i < framesPerBuffer; i++)		// Loop over buffer
 	{
@@ -98,9 +92,12 @@ int	paCallback(const void *inputBuffer, void *outputBuffer,
 					if (!note->is_rest)
 					{
 						instrument(&sample, track, callback_time, note);
-						// if (i < 10 && t_idx == 0)
-    					// 	printf("freq=%f sample=%f\n", note->freq_hz, sample);
 						envelope(&sample, track, callback_time, note);
+						int bar_idx = (i * BARS) / framesPerBuffer;
+						if (bar_idx >= BARS)
+							bar_idx = BARS - 1;
+						bar_accum[bar_idx] += fabs(sample); // accumulate absolute value (magnitude)
+						bar_count[bar_idx]++;
 					}
 					break;			// only one note active at a time per track
 				}
@@ -116,6 +113,8 @@ int	paCallback(const void *inputBuffer, void *outputBuffer,
 		*out++ = out_sample; // right
 		callback_time += 1.0 / SAMPLE_RATE;
 	}
+	compute_levels(bar_accum, bar_count, levels);
+	print_bar(levels);
 	sched->current_time = callback_time;
 	return paContinue; // keep playing
 }

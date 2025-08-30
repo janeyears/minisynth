@@ -20,16 +20,24 @@
 #define TWO_PI 6.283185307179586
 #define PI_TWO 0.6366197723675814
 
-#define MAX_LINE 4096
+#define BARS 20
+#define HEIGHT 10
+#define MAX_FREQ 20000.0
+#define DECAY 0.85
+#define MAX_MAGNITUDE 32767.0
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
 #define GREEN   "\033[32m"
 #define YELLOW  "\033[33m"
 #define BLUE    "\033[34m"
-#define MAGENTA "\033[35m"
+#define MAGENTA "\033[38;5;129m"
 #define CYAN    "\033[36m"
-
+#define ORANGE    "\033[38;5;208m"
+#define LIGHT_RED     "\033[91m"
+#define LIGHT_GREEN   "\033[92m"
+#define LIGHT_YELLOW  "\033[93m"
+#define LIGHT_BLUE    "\033[94m"
 typedef enum e_inst
 {
 	SINE,
@@ -61,12 +69,11 @@ typedef struct s_track
 	t_note				*notes;
 	int					note_count;
 	int					note_capacity;
-	// BONUS, now it is hardcoded to values in get_schedule()
-	// double				volume;		// 0.0 = silent, 1.0 = full volume
-	// double				attack;		// seconds
-	// double				decay;		// seconds
-	// double				sustain;	// 0.0–1.0
-	// double				release;	// seconds
+	double				volume;		// 0.0 = silent, 1.0 = full volume
+	double				attack;		// seconds
+	double				decay;		// seconds
+	double				sustain;	// 0.0–1.0
+	double				release;	// seconds
 }	t_track;
 
 typedef struct s_song

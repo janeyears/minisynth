@@ -2,10 +2,10 @@ tempo 160
 tracks triangle,sine,kick,snare
 
 volumes 100,50,80,60
-track 1 adsr 0.01 0.1 0.8 0.3
-track 2 adsr 0.05 0.15 0.6 0.2
-track 3 adsr 0.001 0.2 0.0 0.3  # kick
-track 4 adsr 0.001 0.15 0.0 0.25 # snare
+adsr track 1 0.01 0.1 0.8 0.3
+adsr track 2 0.05 0.15 0.6 0.2
+adsr track 3 0.001 0.2 0.0 0.3
+adsr track 4 0.001 0.15 0.0 0.25
 
 1: | c d e f e d | c/3  g | c/5  r/1 |
 2: | c2/3  d     | a2   g | c3/5 r/1 |

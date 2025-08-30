@@ -3,7 +3,7 @@ NAME := minisynth
 # Sources
 PARSING		:= pars
 MAIN		:= main
-SOUNDS		:= synthesizer schedule
+SOUNDS		:= synthesizer schedule visualaizer
 
 # Paths
 OBJS_PATH	:= ./obj
@@ -20,7 +20,7 @@ OBJ := $(SRCS:src/%=$(OBJS_PATH)/%)
 OBJ := $(OBJ:.c=.o)
 
 # Dependency files
-DEP := $(DEP:.c=.d)
+DEP := $(OBJ:.o=.d)
 
 # Compiler & flags
 CC := cc

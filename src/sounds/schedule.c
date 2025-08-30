@@ -80,11 +80,11 @@ int get_schedule(t_schedule *schedule, t_song *song)
 		schedule->tracks[i].instrument = song->tracks[i].instrument;
 
 //NEED ADD TO PARSING
-		schedule->tracks[i].volume = 1.0;//song->tracks[i].volume / 100.0;
-		schedule->tracks[i].attack = 0.01;//song->tracks[i].attack;
-		schedule->tracks[i].decay = 0.1;//song->tracks[i].decay;
-		schedule->tracks[i].sustain = 0.8;//song->tracks[i].sustain;
-		schedule->tracks[i].release = 0.3;//song->tracks[i].release;
+		schedule->tracks[i].volume = song->tracks[i].volume / 100.0;
+		schedule->tracks[i].attack = song->tracks[i].attack;
+		schedule->tracks[i].decay = song->tracks[i].decay;
+		schedule->tracks[i].sustain = song->tracks[i].sustain;
+		schedule->tracks[i].release = song->tracks[i].release;
 
 		time = 0.0;
 		for (int j = 0; j < song->tracks[i].note_count; j++) {

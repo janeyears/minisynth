@@ -1,5 +1,9 @@
 #include "minisynth.h"
 
+int is_note_letter(char c) {
+    return (c >= 'a' && c <= 'g') || c == 'k' || c == 's';
+}
+
 char *trim(char *str)
 {
 	char *end;
@@ -23,6 +27,10 @@ t_inst parse_instrument(const char *name) {
 		return SQUARE;
 	if (strcmp(name, "triangle") == 0) 
 		return TRIANGLE;
+	if (strcmp(name, "kick") == 0) 
+		return KICK;
+	if (strcmp(name, "snare") == 0) 
+		return SNARE;
 	return SINE;
 }
 
@@ -69,19 +77,32 @@ void add_note(t_track *track, t_note n)
 t_list *read_file_to_list(const char *filename) 
 {
 	FILE *fd = fopen(filename, "r");
-	if (!fd) { perror("Can't open the file"); exit(1); }
+	if (!fd) {
+		perror("Can't open the file");
+		exit(1);
+	}
 
-	char buffer[1024];
+	char *buffer = NULL;
+	size_t bufsize = 0;
+	ssize_t linelen;
 	t_list *head = NULL;
 	t_list *tail = NULL;
 
-	while (fgets(buffer, sizeof(buffer), fd)) 
+	while ((linelen = getline(&buffer, &bufsize, fd)) != -1) 
 	{
 		char *line = trim(buffer);
 		if (*line == '\0' || *line == '#') 
 			continue;
 		t_list *node = malloc(sizeof(t_list));
+		if (!node) {
+			perror("malloc");
+			exit(1);
+		}
 		node->line = strdup(line);
+		if (!node->line) {
+			perror("strdup");
+			exit(1);
+		}
 		node->next = NULL;
 		if (!head) 
 			head = node;
@@ -89,6 +110,7 @@ t_list *read_file_to_list(const char *filename)
 			tail->next = node;
 		tail = node;
 	}
+	free(buffer);
 	fclose(fd);
 	return head;
 }
@@ -109,6 +131,24 @@ void parse_linked_list(t_list *head, t_song *song)
 			tempo_found = 1;
 			song->tempo = atoi(line + 5);
 		}
+		else if (strncmp(line, "volumes", 7) == 0) 
+		{
+			char *vol_str = trim(line + 7);  // skip "volumes"
+			int i = 0;
+			char *token = strtok(vol_str, ",");
+			while (token && i < song->track_count) 
+			{
+				double vol = atof(trim(token));
+				song->tracks[i].volume = vol; // store 0.0 - 1.0
+				i++;
+				token = strtok(NULL, ",");
+			}
+			if (i != song->track_count)
+			{
+				fprintf(stderr, "Volume count does not match track count\n");
+				exit(1);
+			}
+		}	
 		else if (!tracks_found && strncmp(line, "tracks", 6) == 0)
 		{
 			tracks_found = 1;
@@ -130,10 +170,36 @@ void parse_linked_list(t_list *head, t_song *song)
 				song->tracks[i].notes = NULL;
 				song->tracks[i].note_count = 0;
 				song->tracks[i].note_capacity = 0;
+				song->tracks[i].volume = 100;  // default 100%
+				song->tracks[i].attack  = 0.01; // optional default ADSR
+				song->tracks[i].decay   = 0.1;
+				song->tracks[i].sustain = 0.8;
+				song->tracks[i].release = 0.3;
 				i++;
 				token = strtok(NULL, ",");
 			}
 		}
+		else if (strncmp(line, "adsr", 4) == 0) 
+		{
+			int track_num;
+			double a, d, s, r;
+			if (sscanf(line, "adsr track %d %lf %lf %lf %lf", &track_num, &a, &d, &s, &r) != 5)
+			{
+				fprintf(stderr, "Invalid ADSR line: %s\n", line);
+				exit(1);
+			}
+			track_num -= 1; // adjust to 0-based index
+			if (track_num < 0 || track_num >= song->track_count)
+			{
+				fprintf(stderr, "ADSR track number out of range: %d\n", track_num + 1);
+				exit(1);
+			}
+			song->tracks[track_num].attack  = a;
+			song->tracks[track_num].decay   = d;
+			song->tracks[track_num].sustain = s;
+			song->tracks[track_num].release = r;
+
+		}	
 		else 
 		{
 		// Only parse track lines here
@@ -153,10 +219,16 @@ void parse_linked_list(t_list *head, t_song *song)
 				char *notes_str = trim(colon + 1);
 				int prev_octave = 4;
 				double prev_duration = 1.0;
+				char prev_pitch = 'c'; // default first note of line
 
 				char *note_token = strtok(notes_str, " \t|");
 				while (note_token) {
 					t_note n = parse_note_token(note_token, &prev_octave, &prev_duration);
+					// handle pitch inheritance
+					if (is_note_letter(n.pitch) || n.pitch == 'r')
+						prev_pitch = n.pitch;
+					else 
+						n.pitch = prev_pitch;
 					add_note(&song->tracks[track_num], n);
 					note_token = strtok(NULL, " \t|");
 				}
