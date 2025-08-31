@@ -1,7 +1,7 @@
 NAME := minisynth
 
 # Sources
-PARSING		:= pars
+PARSING		:= parsing parsing_utils
 MAIN		:= main
 SOUNDS		:= synthesizer schedule visualaizer
 
