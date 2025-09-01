@@ -42,6 +42,8 @@ or
 
 ## Features
 
+NOTE! The focus of this project is not error handling. So program will work only with valid input files.
+
 * **Read from `.synth` files** using keywords like:
 
   ```text

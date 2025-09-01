@@ -9,7 +9,7 @@ int		paCallback(const void *inputBuffer, void *outputBuffer,
 					const PaStreamCallbackTimeInfo* timeInfo,
 					PaStreamCallbackFlags statusFlags,
 					void *userData);
-void    print_bar(int levels[BARS]);
-void    compute_levels(double bar_accum[BARS], int bar_count[BARS], int levels[BARS]);
+void	print_bar(int levels[BARS]);
+void	compute_levels(double bar_accum[BARS], int bar_count[BARS], int levels[BARS]);
 
 #endif

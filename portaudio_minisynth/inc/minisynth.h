@@ -16,5 +16,6 @@ void parsing(char *file, t_song *song);
 void free_list(t_list *head);
 int is_note_letter(char c);
 char *trim(char *str);
+void free_notes(t_song *song);
 
 #endif

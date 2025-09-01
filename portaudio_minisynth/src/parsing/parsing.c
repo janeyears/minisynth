@@ -43,7 +43,7 @@ static t_note parse_note_token(const char *token, int *prev_octave, double *prev
 	return n;
 }
 
-static void add_note(t_track *track, t_note n) 
+static int add_note(t_track *track, t_note n) 
 {
 	if (track->note_count >= track->note_capacity) 
 	{
@@ -51,11 +51,12 @@ static void add_note(t_track *track, t_note n)
 		track->notes = realloc(track->notes, track->note_capacity * sizeof(t_note));
 		if (!track->notes) 
 		{ 
-			perror("realloc"); 
-			exit(1); 
+			perror("realloc");
+			return 1;
 		}
 	}
 	track->notes[track->note_count++] = n;
+	return 0;
 }
 
 static t_list *read_file_to_list(const char *filename) 
@@ -80,11 +81,17 @@ static t_list *read_file_to_list(const char *filename)
 		t_list *node = malloc(sizeof(t_list));
 		if (!node) {
 			perror("malloc");
+			fclose(fd);
+			free(buffer);
+			free_list(head);
 			exit(1);
 		}
 		node->line = strdup(line);
 		if (!node->line) {
 			perror("strdup");
+			fclose(fd);
+			free(buffer);
+			free_list(head);
 			exit(1);
 		}
 		node->next = NULL;
@@ -106,18 +113,18 @@ static void parse_tempo(char *line, t_song *song, int *tempo_found) {
 	}
 }
 
-static void parse_tracks(char *line, t_song *song, int *tracks_found) {
+static int parse_tracks(char *line, t_song *song, int *tracks_found) {
 	if (!(*tracks_found) && strncmp(line, "tracks", 6) == 0) {
 		*tracks_found = 1;
 		char *instr_list = trim(line + 6);
-
 		int track_count = 1;
 		for (char *p = instr_list; *p; p++)
 			if (*p == ',') track_count++;
 
 		song->track_count = track_count;
 		song->tracks = calloc(track_count, sizeof(t_track));
-
+		if (!song->tracks)
+			return 1;
 		int i = 0;
 		char *token = strtok(instr_list, ",");
 		while (token) {
@@ -134,6 +141,7 @@ static void parse_tracks(char *line, t_song *song, int *tracks_found) {
 			token = strtok(NULL, ",");
 		}
 	}
+	return 0;
 }
 
 static void parse_volumes(char *line, t_song *song) {
@@ -154,18 +162,8 @@ static void parse_adsr(char *line, t_song *song) {
 		int track_num = 0;
 		double a = 0.0, d = 0.0, s = 0.0, r = 0.0;
 
-		if (sscanf(line, "adsr track %d %lf %lf %lf %lf",
-				&track_num, &a, &d, &s, &r) != 5) {
-			fprintf(stderr, "Invalid ADSR line: %s\n", line);
-			exit(1);
-		}
-
+		sscanf(line, "adsr track %d %lf %lf %lf %lf", &track_num, &a, &d, &s, &r);
 		track_num -= 1; // adjust to 0-based index
-		if (track_num < 0 || track_num >= song->track_count) {
-			fprintf(stderr, "ADSR track number out of range: %d\n", track_num + 1);
-			exit(1);
-		}
-
 		song->tracks[track_num].attack  = a;
 		song->tracks[track_num].decay   = d;
 		song->tracks[track_num].sustain = s;
@@ -173,7 +171,7 @@ static void parse_adsr(char *line, t_song *song) {
 	}
 }
 
-static void parse_track_notes(char *line, t_song *song) {
+static int parse_track_notes(char *line, t_song *song) {
 	if (isdigit((unsigned char)line[0])) {
 		char *colon = strchr(line, ':');
 		*colon = '\0';
@@ -190,10 +188,15 @@ static void parse_track_notes(char *line, t_song *song) {
 				prev_pitch = n.pitch;
 			else
 				n.pitch = prev_pitch;
-			add_note(&song->tracks[track_num], n);
+			if (add_note(&song->tracks[track_num], n) == 1)
+			{
+				free_notes(song);
+				return 1;
+			}
 			note_token = strtok(NULL, " \t|");
 		}
 	}
+	return 0;
 }
 
 static void parse_linked_list(t_list *head, t_song *song) {
@@ -205,11 +208,19 @@ static void parse_linked_list(t_list *head, t_song *song) {
 		char *line = curr->line;
 
 		parse_tempo(line, song, &tempo_found);
-		parse_tracks(line, song, &tracks_found);
+		if (parse_tracks(line, song, &tracks_found) == 1)
+		{
+			free_list(head);
+			exit(1);
+		}
 		parse_volumes(line, song);
 		parse_adsr(line, song);
-		parse_track_notes(line, song);
-
+		if (parse_track_notes(line, song) == 1)
+		{
+			free(song->tracks);
+			free_list(head);
+			exit(1);
+		}
 		curr = curr->next;
 	}
 }
