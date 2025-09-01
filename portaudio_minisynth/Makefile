@@ -1,4 +1,4 @@
-NAME := portaudio_minisynth
+NAME := minisynth_portaudio
 
 # Sources
 PARSING		:= parsing parsing_utils
