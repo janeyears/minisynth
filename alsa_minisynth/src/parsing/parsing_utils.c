@@ -43,10 +43,12 @@ void free_song(t_song *song)
 
 void free_schedule(t_schedule *schedule) 
 {
+	if (!schedule)
+		return;
+
 	for (int j = 0; j < schedule->track_count; j++)
 	{
-		for (int i = 0; i < schedule->tracks[j].note_count; i++)
-			free(schedule->tracks[i].notes);
+		free(schedule->tracks[j].notes);  // free the notes array for each track
 	}
-	free(schedule->tracks);
+	free(schedule->tracks);  // free the array of tracks
 }
