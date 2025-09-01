@@ -19,7 +19,7 @@ int main (int ac, char **av)
 	PaError err;
 	err = Pa_Initialize();							// Initialization of PortAudio
 	if (err != paNoError)
-		return (perror("PortAudio error: %s"), perror(Pa_GetErrorText(err)), 1);
+		return (perror("PortAudio error: %s"), perror(Pa_GetErrorText(err)), free_schedule(&schedule), free_song(&song), 1);
 
 	printf("PortAudio initialized!\n");
 
@@ -33,11 +33,11 @@ int main (int ac, char **av)
 							&schedule);				// user data, my schedule
 
 	if (err != paNoError)
-		return (perror("Open error\n"), 1);
+		return (perror("Open error\n"), free_schedule(&schedule), free_song(&song), 1);
 
 	err = Pa_StartStream(stream);					// Start stream (playing)
 	if (err != paNoError)
-		return (printf("Start error\n"), 1);
+		return (perror("Start error\n"), free_schedule(&schedule), free_song(&song), 1);
 
 	Pa_Sleep((int)(schedule.song_duration * 1000));	// Wait for whole song to play
 
@@ -45,4 +45,6 @@ int main (int ac, char **av)
 	Pa_CloseStream(stream);
 	Pa_Terminate();									//Terminate when done
 	printf("Hope you enjoyed!\n");
+	free_schedule(&schedule);
+	free_song(&song);
 }

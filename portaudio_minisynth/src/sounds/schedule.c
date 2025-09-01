@@ -23,16 +23,15 @@ double note_to_freq(t_note n)
 	double	freq;
 
 	if(n.pitch == 'r')
-		return 0.0; // пауза
+		return 0.0; // pause
 	semitone = pitch_to_semitone(n.pitch);
 	if(n.alteration == '#')
 		semitone += 1;
 	if(n.alteration == 'b')
 		semitone -= 1;
-	octave = n.octave;  // already an int now
+	octave = n.octave;
 	midi = (octave + 1) * 12 + semitone;
 	freq = 440.0 * pow(2.0, (midi - 69) / 12.0);
-	printf("%f, %d, %d, %d, %c, %c, %c\n", freq, octave, semitone, midi, n.alteration, n.pitch, n.octave);
 	return (freq);
 }
 
@@ -63,23 +62,22 @@ int get_schedule(t_schedule *schedule, t_song *song)
 	schedule->tracks = malloc(schedule->track_count * sizeof(t_scheduled_track));
 	if (!schedule->tracks)
 	{
-		// perror("malloc failed");  ERROR MSG
-		return (-1);
+		perror("malloc");
+		free_song(song);
+		exit(1);
 	}
 	for (int i = 0; i < schedule->track_count; i++) {
 		schedule->tracks[i].note_count = song->tracks[i].note_count;
 		schedule->tracks[i].notes = malloc(
 			sizeof(t_scheduled_note) * schedule->tracks[i].note_count);
-		if (!schedule->tracks)
+		if (!schedule->tracks[i].notes)
 		{
-			// perror("malloc failed");  ERROR MSG
-			//free schedule->tracks[i].notes for all done i
-			//free schedule->tracks
-			return (-1);
+			perror("malloc");
+			free_schedule(schedule);
+			free_song(song);
+			exit(1);
 		}
 		schedule->tracks[i].instrument = song->tracks[i].instrument;
-
-//NEED ADD TO PARSING
 		schedule->tracks[i].volume = song->tracks[i].volume / 100.0;
 		schedule->tracks[i].attack = song->tracks[i].attack;
 		schedule->tracks[i].decay = song->tracks[i].decay;

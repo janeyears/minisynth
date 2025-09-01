@@ -35,3 +35,19 @@ void free_notes(t_song *song)
 	for (int i = 0; i < song->track_count; i++)
 		free(song->tracks[i].notes);
 }
+
+void free_song(t_song *song)
+{
+	free_notes(song);
+	free(song->tracks);
+}
+
+void free_schedule(t_schedule *schedule) 
+{
+	for (int j = 0; j < schedule->track_count; j++)
+	{
+		for (int i = 0; i < schedule->tracks[j].note_count; i++)
+			free(schedule->tracks[i].notes);
+	}
+	free(schedule->tracks);
+}

@@ -21,6 +21,8 @@ int main(int ac, char **av)
 
 	if (snd_pcm_open(&pcm_handle, "default", SND_PCM_STREAM_PLAYBACK, 0) < 0) {
 		perror("ALSA: cannot open device");
+		free_schedule(&schedule);
+		free_song(&song);
 		return 1;
 	}
 	printf("ALSA initialized!\n");
@@ -88,5 +90,7 @@ int main(int ac, char **av)
 	snd_pcm_close(pcm_handle);
 
 	printf("\033[1;5;31mHope you enjoyed!%s\n", RESET);
+	free_schedule(&schedule);
+	free_song(&song);
 	return 0;
 }
